@@ -1,27 +1,24 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, StopCircle } from 'lucide-react';
-import Markdown from 'react-markdown';
-import { useToast } from '@/hooks/use-toast';
-import { Toaster } from '@/components/ui/toaster';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
   SelectLabel,
-  SelectScrollDownButton,
-  SelectScrollUpButton,
-  SelectSeparator,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import { Toaster } from '@/components/ui/toaster';
+import { useToast } from '@/hooks/use-toast';
+import { Send, StopCircle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import Markdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -49,6 +46,8 @@ export default function Home() {
   const [botResponse, setResponse] = useState('');
   const [streaming, setStreaming] = useState(false);
 
+  const [loading, setLoading] = useState(false)
+
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
@@ -59,12 +58,15 @@ export default function Home() {
       timestamp: new Date(),
     };
 
+    
     setMessages((prev) => [...prev, userMessage]);
-
+    
     // Simulate bot response
     setResponse(''); // Reset response
-
+    
     try {
+      setLoading(true)
+
       const EXT = `${process.env.NEXT_PUBLIC_OLLAMA_URL}/chat`;
 
       const INT = 'http://localhost:11434/api/generate';
@@ -85,6 +87,8 @@ export default function Home() {
         }),
         signal: controller.signal,
       });
+
+      setLoading(false)
 
       if (!res.body) {
         toast({
@@ -123,6 +127,8 @@ export default function Home() {
 
             tempContent += json.response;
           } else if (json?.error) {
+            tempContent += json.error;
+
             toast({
               title: json?.message || 'Something went wrong',
             });
@@ -145,7 +151,9 @@ export default function Home() {
       };
 
       setMessages((prev) => [...prev, botMessage]);
+
       setStreaming(false);
+
     } catch (error) {
       toast({
         title: (error as any)?.message || 'Unexpected error',
@@ -231,6 +239,12 @@ export default function Home() {
               </div>
             </div>
           ))}
+
+          {loading && 
+            <p>
+              Loading...
+            </p>
+          }
 
           {streaming && (
             <div className="flex justify-start">
