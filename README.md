@@ -6,4 +6,5 @@
 * Then pull source code
 * Build and run with pm2
 * Might need a server with minimum of 8GB of ram to work or the ollama is gonna choke so hard.
+* The communication between UI and Ollama is served via `/api/chat` directory
 * Bonus: use [Cloudflare](https://www.cloudflare.com/) for a little extra speed with free CDN solution.
