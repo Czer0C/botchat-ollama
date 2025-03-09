@@ -4,7 +4,7 @@ const OLLAMA_CHAT = `${OLLAMA_BASE}/generate`;
 
 const OLLAMA_MODELS = `${OLLAMA_BASE}/tags`;
 
-const rateLimit = 60_000; // 60 seconds per request
+const rateLimit = 10_000; // 60 seconds per request
 
 const cachedIPs = {};
 
@@ -41,11 +41,13 @@ export async function POST(req: Request, res: Response) {
     });
   }
 
-  if (lastRequest && lastRequest - new Date().getTime() < rateLimit) {
+  const elapsed = new Date().getTime() - lastRequest;
+
+  if (lastRequest && elapsed > 0 && elapsed < rateLimit) {
     return new Response(
       JSON.stringify({
         error: `Rate limit exceeded, try again in ${
-          (lastRequest - new Date().getTime() + rateLimit) / 1000
+          rateLimit / 1000 - elapsed / 1000
         } seconds ❌`,
       }),
       {
