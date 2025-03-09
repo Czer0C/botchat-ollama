@@ -211,9 +211,7 @@ export default function Home() {
                 </Avatar>
                 <div
                   className={`rounded-lg p-3 ${
-                    message.sender === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
+                    message.sender === 'user' ? 'bg-muted' : ''
                   }`}
                 >
                   <Markdown>{message.content}</Markdown>
