@@ -5,3 +5,4 @@
 * First install ollama on host server: `curl -fsSL https://ollama.com/install.sh | sh`
 * Then pull source code
 * Build and run with pm2
+* Might need a server with minimum of 8GB of ram to work or the ollama is gonna choke so hard.
