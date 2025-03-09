@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send } from 'lucide-react';
+import { Send, StopCircle } from 'lucide-react';
 import Markdown from 'react-markdown'
 
 interface Message {
@@ -43,13 +43,29 @@ export default function Home() {
     // Simulate bot response
     setResponse(""); // Reset response
 
-    const res = await fetch("http://localhost:11434/api/generate", {
+
+    const EXT = "http://34.44.143.100:3000/chat"
+
+    const INT = 'http://localhost:11434/api/generate'
+
+    const controller = new AbortController();
+
+    controllerRef.current = controller;
+
+    const res = await fetch(EXT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "llama3.2", prompt: inputMessage, stream: true }),
+      body: JSON.stringify({ 
+        // model: "llama3.2", 
+        prompt: inputMessage, 
+        // stream: true
+      }),
+      signal:controller.signal
     });
 
     if (!res.body) return;
+
+    setInputMessage("");
 
     setStreaming(true);
 
@@ -85,11 +101,19 @@ export default function Home() {
     };
 
     setMessages((prev) => [...prev, botMessage]);
-
-    setInputMessage("");
     
     setStreaming(false);
   };
+
+  const controllerRef = useRef(null);
+
+  const stopStreaming = () => {
+    if (controllerRef.current) {
+        controllerRef.current.abort(); // Cancel request
+        controllerRef.current = null;
+    }
+    setStreaming(false);
+};
 
   return (
     <div className="flex flex-col h-screen max-w-3xl mx-auto p-4">
@@ -164,14 +188,6 @@ export default function Home() {
               </div>
             </div>
           )}
-
-          {
-            streaming && (
-              <small>
-                Streaming response...
-              </small>
-            )
-          }
         </div>
       </ScrollArea>
 
@@ -190,7 +206,13 @@ export default function Home() {
             className="flex-1"
           />
           <Button type="submit" size="icon">
-            <Send className="h-4 w-4" />
+            {
+              streaming ? <StopCircle
+                className="h-4 w-4"
+                onClick={stopStreaming}
+              />:
+              <Send className="h-4 w-4" />
+            }
           </Button>
         </form>
       </div>
