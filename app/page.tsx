@@ -21,12 +21,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 
 interface Message {
   id: string;
   content: string;
   sender: 'user' | 'bot';
   timestamp: Date;
+  model?: string;
 }
 
 export default function Home() {
@@ -40,6 +42,7 @@ export default function Home() {
       content: 'Hello! How can I help you today?',
       sender: 'bot',
       timestamp: new Date(),
+      model,
     },
   ]);
   const [inputMessage, setInputMessage] = useState('');
@@ -138,6 +141,7 @@ export default function Home() {
         content: tempContent,
         sender: 'bot',
         timestamp: new Date(),
+        model,
       };
 
       setMessages((prev) => [...prev, botMessage]);
@@ -215,6 +219,15 @@ export default function Home() {
                   <Markdown>{message.content}</Markdown>
                   <span className="text-xs opacity-50">
                     {message.timestamp.toLocaleTimeString()}
+
+                    {message.model && (
+                      <Badge
+                        className="text-emerald-100 bg-emerald-500  dark:text-emerald-800 dark:bg-emerald-200 ml-2"
+                        variant="outline"
+                      >
+                        {message.model}
+                      </Badge>
+                    )}
                   </span>
                 </div>
               </div>
