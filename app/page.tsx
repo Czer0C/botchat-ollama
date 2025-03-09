@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Send } from 'lucide-react';
+import Markdown from 'react-markdown'
 
 interface Message {
   id: string;
@@ -68,6 +69,7 @@ export default function Home() {
 
         if (json?.response) {
           setResponse((prev) => prev + json.response);
+
           tempContent += json.response;
         } 
       } catch (error) {
@@ -86,8 +88,6 @@ export default function Home() {
 
     setInputMessage("");
     setLoading(false);
-
-   
   };
 
 
@@ -137,7 +137,9 @@ export default function Home() {
                       : 'bg-muted'
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
+                 <Markdown>
+                    {message.content}
+                 </Markdown>
                   <span className="text-xs opacity-50">
                     {message.timestamp.toLocaleTimeString()}
                   </span>
@@ -154,7 +156,10 @@ export default function Home() {
                   <AvatarFallback>B</AvatarFallback>
                 </Avatar>
                 <div className="rounded-lg p-3 bg-muted">
-                  <p className="text-sm">{botResponse}</p>
+                  
+                 <Markdown>
+                    {botResponse}
+                 </Markdown>
                 </div>
               </div>
             </div>
