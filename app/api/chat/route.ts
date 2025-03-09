@@ -44,10 +44,9 @@ export async function POST(req: Request, res: Response) {
   if (lastRequest && lastRequest - new Date().getTime() < rateLimit) {
     return new Response(
       JSON.stringify({
-        message: `Rate limit exceeded, try again in ${
+        error: `Rate limit exceeded, try again in ${
           (lastRequest - new Date().getTime() + rateLimit) / 1000
-        } seconds`,
-        error: true,
+        } seconds ❌`,
       }),
       {
         headers: { 'Content-Type': 'application/json' },

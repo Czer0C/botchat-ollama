@@ -12,7 +12,7 @@ import {
   SelectItem,
   SelectLabel,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@/components/ui/select';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
@@ -46,7 +46,7 @@ export default function Home() {
   const [botResponse, setResponse] = useState('');
   const [streaming, setStreaming] = useState(false);
 
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
@@ -58,14 +58,13 @@ export default function Home() {
       timestamp: new Date(),
     };
 
-    
     setMessages((prev) => [...prev, userMessage]);
-    
+
     // Simulate bot response
     setResponse(''); // Reset response
-    
+
     try {
-      setLoading(true)
+      setLoading(true);
 
       const EXT = `${process.env.NEXT_PUBLIC_OLLAMA_URL}/chat`;
 
@@ -88,7 +87,7 @@ export default function Home() {
         signal: controller.signal,
       });
 
-      setLoading(false)
+      setLoading(false);
 
       if (!res.body) {
         toast({
@@ -127,7 +126,7 @@ export default function Home() {
 
             tempContent += json.response;
           } else if (json?.error) {
-            tempContent += json.error;
+            tempContent += json?.error;
 
             toast({
               title: json?.message || 'Something went wrong',
@@ -153,7 +152,6 @@ export default function Home() {
       setMessages((prev) => [...prev, botMessage]);
 
       setStreaming(false);
-
     } catch (error) {
       toast({
         title: (error as any)?.message || 'Unexpected error',
@@ -240,11 +238,7 @@ export default function Home() {
             </div>
           ))}
 
-          {loading && 
-            <p>
-              Loading...
-            </p>
-          }
+          {loading && <p>Loading...</p>}
 
           {streaming && (
             <div className="flex justify-start">
