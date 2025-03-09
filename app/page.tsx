@@ -26,7 +26,7 @@ export default function Home() {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [botResponse, setResponse] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
@@ -43,8 +43,6 @@ export default function Home() {
     // Simulate bot response
     setResponse(""); // Reset response
 
-    setLoading(true);
-
     const res = await fetch("http://localhost:11434/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -52,6 +50,8 @@ export default function Home() {
     });
 
     if (!res.body) return;
+
+    setStreaming(true);
 
     const reader = res.body.getReader();
 
@@ -87,9 +87,9 @@ export default function Home() {
     setMessages((prev) => [...prev, botMessage]);
 
     setInputMessage("");
-    setLoading(false);
+    
+    setStreaming(false);
   };
-
 
   return (
     <div className="flex flex-col h-screen max-w-3xl mx-auto p-4">
@@ -148,7 +148,7 @@ export default function Home() {
             </div>
           ))}
 
-          {loading && (
+          {streaming && (
             <div className="flex justify-start">
               <div className="flex items-start space-x-2 max-w-[80%]">
                 <Avatar className="h-8 w-8">
@@ -164,6 +164,14 @@ export default function Home() {
               </div>
             </div>
           )}
+
+          {
+            streaming && (
+              <small>
+                Streaming response...
+              </small>
+            )
+          }
         </div>
       </ScrollArea>
 
