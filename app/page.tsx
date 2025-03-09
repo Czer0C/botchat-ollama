@@ -105,10 +105,10 @@ export default function Home() {
     setStreaming(false);
   };
 
-  const controllerRef = useRef(null);
+  const controllerRef = useRef<AbortController | null>(null);
 
   const stopStreaming = () => {
-    if (controllerRef.current) {
+    if (controllerRef.current ) {
         controllerRef.current.abort(); // Cancel request
         controllerRef.current = null;
     }
