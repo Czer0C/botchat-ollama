@@ -44,7 +44,7 @@ export default function Home() {
     setResponse(""); // Reset response
 
 
-    const EXT = "http://34.44.143.100:3000/chat"
+    const EXT = `${process.env.NEXT_PUBLIC_OLLAMA_URL}/chat`
 
     const INT = 'http://localhost:11434/api/generate'
 
