@@ -6,3 +6,4 @@
 * Then pull source code
 * Build and run with pm2
 * Might need a server with minimum of 8GB of ram to work or the ollama is gonna choke so hard.
+* Bonus: use cloudflare for a little extra speed with free CDN solution.
