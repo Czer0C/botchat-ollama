@@ -58,7 +58,7 @@ export async function POST(req: Request, res: Response) {
 
   const startTime = new Date();
 
-  const log = `Received request with prompt: **${prompt}** at ${startTime.toISOString()}`;
+  const log = `Received request with prompt: **${prompt}** and model ${model} at ${startTime.toISOString()}`;
 
   console.log(log);
 

@@ -9,6 +9,18 @@ import { Send, StopCircle } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface Message {
   id: string;
@@ -19,6 +31,8 @@ interface Message {
 
 export default function Home() {
   const { toast } = useToast();
+
+  const [model, setModel] = useState('llama3.2');
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -62,7 +76,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama3.2',
+          model,
           prompt: inputMessage,
           stream: true,
         }),
@@ -147,15 +161,18 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen max-w-3xl mx-auto p-4">
-      <div className="flex items-center space-x-4 p-4 border-b">
-        <Avatar>
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>AI</AvatarFallback>
-        </Avatar>
-        <div>
-          <h1 className="text-2xl font-bold">Chat Assistant</h1>
-          <p className="text-sm text-muted-foreground">Always here to help</p>
+      <div className="flex items-center space-x-4 p-4 border-b justify-between">
+        <div className="flex items-center space-x-2">
+          <Avatar>
+            <AvatarImage src="https://github.com/shadcn.png" />
+            <AvatarFallback>AI</AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="text-2xl font-bold">Chat Assistant</h1>
+            <p className="text-sm text-muted-foreground">Always here to help</p>
+          </div>
         </div>
+        <SelectModel model={model} setModel={setModel} />
       </div>
 
       <Toaster />
@@ -243,6 +260,69 @@ export default function Home() {
           </Button>
         </form>
       </div>
+    </div>
+  );
+}
+
+function SelectModel({
+  model,
+  setModel,
+}: {
+  model: string;
+  setModel: (model: string) => void;
+}) {
+  const [options, setOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const res = await fetch('/api/chat');
+
+        const data = await res.json();
+
+        setOptions(data?.data?.models);
+
+        setModel(data?.data?.models[0]?.name);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchModels();
+  }, []);
+
+  if (!options.length) return 'Loading models...';
+
+  return (
+    <div className="space-y-2">
+      <Select value={model} onValueChange={setModel}>
+        <SelectTrigger className="w-[280px]">
+          <SelectValue placeholder="Select a model" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>Open Source</SelectLabel>
+            {/* <SelectItem value="llama3.2">Llama3.2</SelectItem> */}
+            {options.map(({ name }) => (
+              <SelectItem key={name} value={name}>
+                {name}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+          {/* <SelectGroup>
+            <SelectLabel>OpenAI</SelectLabel>
+            <SelectItem disabled value="gpt-3">
+              GPT-3
+            </SelectItem>
+            <SelectItem disabled value="gpt-4">
+              GPT-4
+            </SelectItem>
+            <SelectItem disabled value="davinci">
+              Davinci
+            </SelectItem>
+          </SelectGroup> */}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
