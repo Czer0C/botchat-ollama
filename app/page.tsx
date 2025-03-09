@@ -271,7 +271,7 @@ export default function Home() {
             className="flex-1"
             disabled={streaming || loading}
           />
-          <Button type="submit" size="icon">
+          <Button type="submit" size="icon" disabled={loading}>
             {streaming ? (
               <StopCircle className="h-4 w-4" onClick={stopStreaming} />
             ) : (
