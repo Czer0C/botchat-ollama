@@ -56,9 +56,9 @@ export default function Home() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
-        // model: "llama3.2", 
+        model: "llama3.2", 
         prompt: inputMessage, 
-        // stream: true
+        stream: true
       }),
       signal:controller.signal
     });
