@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Send, StopCircle } from 'lucide-react';
-import Markdown from 'react-markdown'
+import Markdown from 'react-markdown';
+import { useToast } from '@/hooks/use-toast';
+import { Toaster } from '@/components/ui/toaster';
 
 interface Message {
   id: string;
@@ -16,6 +18,8 @@ interface Message {
 }
 
 export default function Home() {
+  const { toast } = useToast();
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -41,79 +45,105 @@ export default function Home() {
     setMessages((prev) => [...prev, userMessage]);
 
     // Simulate bot response
-    setResponse(""); // Reset response
+    setResponse(''); // Reset response
 
+    try {
+      const EXT = `${process.env.NEXT_PUBLIC_OLLAMA_URL}/chat`;
 
-    const EXT = `${process.env.NEXT_PUBLIC_OLLAMA_URL}/chat`
+      const INT = 'http://localhost:11434/api/generate';
 
-    const INT = 'http://localhost:11434/api/generate'
+      const API = '/api/chat';
 
-    const controller = new AbortController();
+      const controller = new AbortController();
 
-    controllerRef.current = controller;
+      controllerRef.current = controller;
 
-    const res = await fetch(EXT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        model: "llama3.2", 
-        prompt: inputMessage, 
-        stream: true
-      }),
-      signal:controller.signal
-    });
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'llama3.2',
+          prompt: inputMessage,
+          stream: true,
+        }),
+        signal: controller.signal,
+      });
 
-    if (!res.body) return;
-
-    setInputMessage("");
-
-    setStreaming(true);
-
-    const reader = res.body.getReader();
-
-    const decoder = new TextDecoder();
-
-    let tempContent = ''
-    
-    while (true) {
-      const { value, done } = await reader.read();
-
-      if (done) break;
-
-      try {
-        const json = JSON.parse(decoder.decode(value));
-
-        if (json?.response) {
-          setResponse((prev) => prev + json.response);
-
-          tempContent += json.response;
-        } 
-      } catch (error) {
-        
+      if (!res.body) {
+        toast({
+          title: 'Error',
+          content: 'No response body',
+        });
       }
+
+      setInputMessage('');
+
+      setStreaming(true);
+
+      if (!res.body) {
+        toast({
+          title: 'Error',
+          content: 'No response body',
+        });
+        return;
+      }
+      const reader = res.body.getReader();
+
+      const decoder = new TextDecoder();
+
+      let tempContent = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+
+        if (done) break;
+
+        try {
+          const json = JSON.parse(decoder.decode(value));
+
+          if (json?.response) {
+            setResponse((prev) => prev + json.response);
+
+            tempContent += json.response;
+          } else if (json?.error) {
+            toast({
+              title: json?.message || 'Something went wrong',
+            });
+          }
+        } catch (error) {
+          console.log(error);
+
+          // toast({
+          //   title: (error as any)?.message || 'error streaming',
+          // });
+        }
+      }
+
+      const botMessage: Message = {
+        id: Date.now().toString(),
+        content: tempContent,
+        sender: 'bot',
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, botMessage]);
+      setStreaming(false);
+    } catch (error) {
+      toast({
+        title: (error as any)?.message || 'Unexpected error',
+      });
     }
-
-    const botMessage: Message = {
-      id: Date.now().toString(),
-      content: tempContent,
-      sender: 'bot',
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, botMessage]);
-    
-    setStreaming(false);
   };
 
   const controllerRef = useRef<AbortController | null>(null);
 
   const stopStreaming = () => {
-    if (controllerRef.current ) {
-        controllerRef.current.abort(); // Cancel request
-        controllerRef.current = null;
+    if (controllerRef.current) {
+      controllerRef.current.abort(); // Cancel request
+      controllerRef.current = null;
     }
     setStreaming(false);
-};
+  };
 
   return (
     <div className="flex flex-col h-screen max-w-3xl mx-auto p-4">
@@ -128,6 +158,8 @@ export default function Home() {
         </div>
       </div>
 
+      <Toaster />
+
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
           {messages.map((message) => (
@@ -139,7 +171,9 @@ export default function Home() {
             >
               <div
                 className={`flex items-start space-x-2 max-w-[80%] ${
-                  message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+                  message.sender === 'user'
+                    ? 'flex-row-reverse space-x-reverse'
+                    : ''
                 }`}
               >
                 <Avatar className="h-8 w-8">
@@ -161,9 +195,7 @@ export default function Home() {
                       : 'bg-muted'
                   }`}
                 >
-                 <Markdown>
-                    {message.content}
-                 </Markdown>
+                  <Markdown>{message.content}</Markdown>
                   <span className="text-xs opacity-50">
                     {message.timestamp.toLocaleTimeString()}
                   </span>
@@ -180,10 +212,7 @@ export default function Home() {
                   <AvatarFallback>B</AvatarFallback>
                 </Avatar>
                 <div className="rounded-lg p-3 bg-muted">
-                  
-                 <Markdown>
-                    {botResponse}
-                 </Markdown>
+                  <Markdown>{botResponse}</Markdown>
                 </div>
               </div>
             </div>
@@ -206,13 +235,11 @@ export default function Home() {
             className="flex-1"
           />
           <Button type="submit" size="icon">
-            {
-              streaming ? <StopCircle
-                className="h-4 w-4"
-                onClick={stopStreaming}
-              />:
+            {streaming ? (
+              <StopCircle className="h-4 w-4" onClick={stopStreaming} />
+            ) : (
               <Send className="h-4 w-4" />
-            }
+            )}
           </Button>
         </form>
       </div>
