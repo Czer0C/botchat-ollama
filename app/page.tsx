@@ -269,6 +269,7 @@ export default function Home() {
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="Type your message..."
             className="flex-1"
+            disabled={streaming || loading}
           />
           <Button type="submit" size="icon">
             {streaming ? (
